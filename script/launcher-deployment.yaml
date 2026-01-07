@@ -1,0 +1,106 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kube-agent
+  namespace: 3407e407-792a-452d-8bb4-03c54ac34d52-5620f907-0281-497d-9098-8c
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kube-agent
+rules:
+# 1. Manage Namespaces (create/delete for tenant isolation)
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["create", "delete", "get", "list", "watch"]
+
+# 2. Core Kubernetes workload resources (across all namespaces)
+- apiGroups: [""]
+  resources: ["pods", "pods/log", "pods/exec", "services", "configmaps", "secrets", "persistentvolumeclaims"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+- apiGroups: ["apps"]
+  resources: ["deployments", "statefulsets", "daemonsets", "replicasets"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+- apiGroups: ["batch"]
+  resources: ["jobs", "cronjobs"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+- apiGroups: ["networking.k8s.io"]
+  resources: ["ingresses", "networkpolicies"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# 3. Skupper CRDs — full access
+- apiGroups: ["van.site.skupper.io"]
+  resources: ["skuppersites"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+- apiGroups: ["van.link.skupper.io"]
+  resources:
+    - "skupperlinks"
+    - "skupperservices"
+    - "accesstokens"
+    - "skupperlinkconnections"
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# 4. Events (useful for debugging)
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kube-agent-manager-binding
+subjects:
+- kind: ServiceAccount
+  name: kube-agent
+  namespace: 3407e407-792a-452d-8bb4-03c54ac34d52-5620f907-0281-497d-9098-8c
+roleRef:
+  kind: ClusterRole
+  name: kube-agent
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-launcher
+  namespace: 3407e407-792a-452d-8bb4-03c54ac34d52-5620f907-0281-497d-9098-8c
+  labels:
+    tier: agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      tier: agent-launcher
+  template:
+    metadata:
+      labels:
+        tier: agent-launcher
+    spec:
+      serviceAccountName: kube-agent
+      containers:
+      - name: agent-launcher-container
+        image: 172.16.1.87:5000/ablv-launcher:v19
+        ports:
+        - containerPort: 5004
+        env:
+        - name: TASK_URL
+          value: "http://control-server-service.3407e407-792a-452d-8bb4-03c54ac34d52-5620f907-0281-497d-9098-8c.svc.cluster.local:80/api/v1/control/tasks"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-launcher-saas
+  namespace: 3407e407-792a-452d-8bb4-03c54ac34d52-5620f907-0281-497d-9098-8c
+  labels:
+    tier: agent-launcher
+spec:
+  type: ClusterIP
+  selector:
+    tier: agent-launcher
+  ports:
+    - protocol: TCP
+      port: 5004
+      targetPort: 5004
