@@ -368,7 +368,7 @@ Pull requests are welcome. For significant changes please open an issue first to
 
 When contributing:
 - Test against both namespace-scoped and full cluster (`all`) scans
-- Run `bash -n k8s-security-scanner.sh` to check for syntax errors before submitting
+- Run `bash -n k8scanner.sh` to check for syntax errors before submitting
 - Ensure Python heredoc report builder has no f-string brace escaping issues
 
 ---
