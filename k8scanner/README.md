@@ -111,9 +111,9 @@ rules:
 ## Installation
 
 ```bash
-git clone https://github.com/yourusername/k8s-security-scanner.git
-cd k8s-security-scanner
-chmod +x k8s-security-scanner.sh
+git clone https://github.com/abluva-research/secure-agent-net.git
+cd k8scanner
+chmod +x k8scanner.sh
 ```
 
 No pip installs, no npm, no virtual environments. Just bash + Docker.
