@@ -1,0 +1,6 @@
+{
+  "components": [
+    {"purl": "pkg:pypi/requests@2.31.0"},
+    {"purl": "pkg:pypi/reqeusts@1.0.0"}
+  ]
+}
