@@ -29,7 +29,8 @@ def load_malicious_index():
         if not os.path.isdir(p):
             continue
         
-        idx[eco] = {}
+        if eco not in idx:
+            idx[eco] = {}
         
         for f in os.listdir(p):
             full_path = os.path.join(p, f)
@@ -51,10 +52,18 @@ def load_malicious_index():
             try:
                 with open(full_path, 'r') as fp:
                     d = json.load(fp)
+                    
+                    # Extract package name from affected field
                     for a in d.get("affected", []):
-                        name = a.get("package", {}).get("name")
+                        pkg = a.get("package", {})
+                        name = pkg.get("name")
+                        
                         if name:
+                            # Store package in correct ecosystem
+                            if eco not in idx:
+                                idx[eco] = {}
                             idx[eco][name] = True
+                            
             except json.JSONDecodeError as e:
                 print(f"[!] JSON decode error in {f}: {e}", file=sys.stderr)
             except Exception as e:
@@ -66,6 +75,12 @@ def load_malicious_index():
     
     total_packages = sum(len(v) for v in idx.values())
     print(f"[+] Index built successfully: {total_packages} malicious packages indexed", file=sys.stderr)
+    
+    # Show breakdown by ecosystem
+    for eco in sorted(idx.keys()):
+        count = len(idx[eco])
+        if count > 0:
+            print(f"    {eco}: {count} packages", file=sys.stderr)
 
 if __name__ == "__main__":
     if not os.path.isdir(MAL_DIR):
