@@ -98,17 +98,17 @@ Details:     No risks found
 ### SBOM File Scan
 
 ```bash
-$ mallscan Interface-Dac-sbom.json
+$ mallscan sbom.json
 
 [*] Fetching OpenSSF malicious packages dataset...
 [+] Dataset ready
 [*] Building malicious package index...
 [+] Index built successfully: 8234 malicious packages indexed
-[*] Scanning SBOM: Interface-Dac-sbom.json
+[*] Scanning SBOM: sbom.json
 [*] Analyzing package [1/458]: GRKOpenSSLFramework@1.0.2.16 (cocoapods)
 [*] Analyzing package [2/458]: requests@2.31.0 (pypi)
 [+] Scan completed
-[*] Results saved to: output/Interface-Dac-results.json
+[*] Results saved to: /sbom-results.json
 ```
 
 ## 📁 Output File
@@ -117,9 +117,9 @@ When scanning SBOM files, results are saved with the SBOM name:
 
 ```bash
 mallscan my-project-sbom.json
-# Output: output/my-project-results.json
+# Output: /my-project-results.json
 
-cat output/my-project-results.json
+cat /my-project-results.json
 ```
 
 JSON output format:
