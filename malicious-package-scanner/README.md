@@ -36,7 +36,7 @@ mallscan pkg:npm/lodash@4.17.21
 
 # Scan entire SBOM file
 mallscan sbom.json
-# Output: output/sbom-results.json
+# Output: {sbom-file-path}/sbom-results.json
 ```
 
 ## 📋 How It Works
@@ -335,33 +335,6 @@ Found a bug? Have a suggestion?
 1. Open an issue
 2. Submit a pull request
 
-## 🚀 Roadmap
-
-- [ ] Support more ecosystems (Cargo, Maven, Composer)
-- [ ] Configuration file support
-- [ ] Exclude patterns/whitelist
-- [ ] Web dashboard
-- [ ] API server mode
-- [ ] Docker container
-
-## 📊 Example Workflow
-
-```bash
-# 1. Generate SBOM
-syft my-project -o json > sbom.json
-
-# 2. Scan for malicious packages
-mallscan sbom.json
-
-# 3. Review results
-cat output/sbom-results.json | jq '.[] | select(.risk_score > 50)'
-
-# 4. Take action
-# - Remove high-risk packages
-# - Update dependencies
-# - Report findings
-```
-
 ## 🆘 Troubleshooting
 
 **"mallscan: command not found"**
@@ -387,22 +360,6 @@ pip install -r requirements.txt
 # Use absolute path or relative path from current directory
 mallscan /full/path/to/sbom.json
 ```
-
-## 🎉 Getting Started
-
-```bash
-# Install
-sudo ./install.sh
-
-# Test
-mallscan requests
-
-# Scan your project
-syft . -o json > sbom.json
-mallscan sbom.json
-```
-
-That's it! Your dependencies are now scanned for malicious packages. 🚀
 
 ## 🗑️ Uninstall
  
