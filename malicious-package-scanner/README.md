@@ -404,6 +404,31 @@ mallscan sbom.json
 
 That's it! Your dependencies are now scanned for malicious packages. 🚀
 
+## 🗑️ Uninstall
+ 
+### System-wide uninstall
+ 
+```bash
+./uninstall.sh
+# Confirms before removing
+# Auto-uses sudo if needed
+```
+ 
+### User-local uninstall
+ 
+```bash
+./uninstall.sh ~/.local/lib/malicious-package-scanner ~/.local/bin
+```
+ 
+### Manual uninstall
+ 
+```bash
+# Remove installation directory
+sudo rm -rf /usr/local/lib/malicious-package-scanner
+ 
+# Remove command
+sudo rm /usr/local/bin/mallscan
+```
 ---
 
 **Version:** 1.0  
