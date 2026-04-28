@@ -5,7 +5,6 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Configuration
-OUTPUT_DIR="${SCRIPT_DIR}/output"
 DATA_DIR="${SCRIPT_DIR}/data"
 CACHE_DIR="${SCRIPT_DIR}/malicious-packages"
 
@@ -80,18 +79,13 @@ scan_sbom_file() {
         return 1
     fi
     
-    # Convert to absolute path if relative
-    if [[ ! "$sbom_file" = /* ]]; then
-        sbom_file="$(pwd)/$sbom_file"
-    fi
-
-    # Create output directory
-    mkdir -p "$OUTPUT_DIR"
-
-    # Get SBOM filename without extension
+    # Get the directory where SBOM file is located
+    local sbom_dir=$(cd "$(dirname "$sbom_file")" && pwd)
     local sbom_basename=$(basename "$sbom_file")
     local sbom_name="${sbom_basename%.*}"
-    local output_json="${OUTPUT_DIR}/${sbom_name}-results.json"
+    
+    # Output file in SAME directory as SBOM
+    local output_json="${sbom_dir}/${sbom_name}-results.json"
 
     # Download/Update dataset
     ensure_dataset
@@ -104,7 +98,7 @@ scan_sbom_file() {
     # Scan SBOM
     print_info "Scanning SBOM: $sbom_file"
 
-    local temp_output="${OUTPUT_DIR}/.tmp_results.json"
+    local temp_output="${sbom_dir}/.tmp_results.json"
 
     echo "[" > "$temp_output"
     local first_entry=true
@@ -148,7 +142,7 @@ if [ $# -eq 0 ]; then
     echo "  $0 requests                              # Check PyPI package"
     echo "  $0 pkg:pypi/requests@2.31.0             # Check with PURL"
     echo "  $0 pkg:npm/lodash@4.17.21               # Check NPM package"
-    echo "  $0 sbom.json                             # Scan SBOM file"
+    echo "  $0 sbom.json                             # Scan SBOM file (result in same dir)"
     exit 1
 fi
 
