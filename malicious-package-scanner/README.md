@@ -332,9 +332,8 @@ MIT License - See LICENSE file for details
 
 Found a bug? Have a suggestion?
 
-1. Check [CONTRIBUTING.md](CONTRIBUTING.md)
-2. Open an issue
-3. Submit a pull request
+1. Open an issue
+2. Submit a pull request
 
 ## 🚀 Roadmap
 
