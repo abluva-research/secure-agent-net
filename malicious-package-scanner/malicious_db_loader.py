@@ -3,14 +3,18 @@ import os
 import json
 import sys
 
-MAL_DIR = "./malicious-packages/osv/malicious"
-OUT = "./data/malicious_index.json"
+# Get script directory (absolute path)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+MAL_DIR = os.path.join(SCRIPT_DIR, "malicious-packages/osv/malicious")
+OUT = os.path.join(SCRIPT_DIR, "data/malicious_index.json")
 
 def load_malicious_index():
     """Load malicious packages into index with progress messaging"""
     idx = {}
     total_files = 0
     processed_files = 0
+    
+    print(f"[*] Using malicious packages from: {MAL_DIR}", file=sys.stderr)
     
     # Count total files first
     for eco in os.listdir(MAL_DIR):
@@ -50,7 +54,7 @@ def load_malicious_index():
                 print(f"[*] Indexing progress: {processed_files}/{total_files} ({pct:.0f}%)", file=sys.stderr)
             
             try:
-                with open(full_path, 'r') as fp:
+                with open(full_path, 'r', encoding='utf-8') as fp:
                     d = json.load(fp)
                     
                     # Extract package name from affected field
@@ -69,7 +73,7 @@ def load_malicious_index():
             except Exception as e:
                 print(f"[!] Error processing {f}: {e}", file=sys.stderr)
     
-    os.makedirs("data", exist_ok=True)
+    os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, 'w') as fp:
         json.dump(idx, fp, indent=2)
     
