@@ -43,9 +43,24 @@ ensure_dataset() {
     print_success "Dataset ready"
 }
 
-# Function to build index if it doesn't exist
-ensure_index() {
+# Function to check if index is valid
+is_index_valid() {
     if [ ! -f "$DATA_DIR/malicious_index.json" ]; then
+        return 1
+    fi
+    
+    # Check if index has content (more than 100 bytes)
+    local size=$(stat -f%z "$DATA_DIR/malicious_index.json" 2>/dev/null || stat -c%s "$DATA_DIR/malicious_index.json" 2>/dev/null || echo "0")
+    if [ "$size" -lt 100 ]; then
+        return 1
+    fi
+    
+    return 0
+}
+
+# Function to build index if it doesn't exist or is empty
+ensure_index() {
+    if ! is_index_valid; then
         print_info "Building malicious package index..."
         python3 "$SCRIPT_DIR/malicious_db_loader.py"
         print_success "Index built"
@@ -61,7 +76,12 @@ check_single_package() {
     # Detect if it's a PURL (pkg:ecosystem/name@version)
     if [[ "$input" == pkg:* ]]; then
         ecosystem=$(echo "$input" | sed 's/pkg:\([^/]*\).*/\1/')
-        name=$(echo "$input" | sed 's/.*\/\([^@]*\).*/\1/')
+        
+        # Extract full package name (including scope if present)
+        # For: pkg:npm/@scope/package-name@version
+        # Extract: @scope/package-name
+        local full_purl=$(echo "$input" | sed 's/pkg:[^/]*\///')  # Remove pkg:ecosystem/
+        name=$(echo "$full_purl" | sed 's/@[^/]*$//')  # Remove @version, keep @scope/package
     fi
     
     print_info "Checking package: $name ($ecosystem)"
@@ -112,7 +132,10 @@ scan_sbom_file() {
         processed=$((processed + 1))
         
         local ecosystem=$(echo "$purl" | cut -d':' -f2 | cut -d'/' -f1)
-        local name=$(echo "$purl" | cut -d'/' -f2 | cut -d'@' -f1)
+        
+        # Extract full package name (including scope if present)
+        local full_purl=$(echo "$purl" | sed 's/pkg:[^/]*\///')
+        local name=$(echo "$full_purl" | sed 's/@[^/]*$//')
         local version=$(echo "$purl" | cut -d'@' -f2)
         
         print_info "Analyzing package [$processed/$total]: $name@$version ($ecosystem)"
@@ -145,6 +168,7 @@ if [ $# -eq 0 ]; then
     echo "  mallscan requests                              # Check PyPI package"
     echo "  mallscan pkg:pypi/requests@2.31.0             # Check with PURL"
     echo "  mallscan pkg:npm/lodash@4.17.21               # Check NPM package"
+    echo "  mallscan pkg:npm/@scope/package@1.0.0         # Check scoped package"
     echo "  mallscan sbom.json                             # Scan SBOM file"
     exit 1
 fi
