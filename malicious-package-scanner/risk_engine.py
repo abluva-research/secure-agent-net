@@ -53,36 +53,37 @@ def analyze_package(pkg, eco):
         if sim(pkg, legit) > 0.8 and pkg != legit:
             res["risks"].append({"type": "TYPOSQUAT", "target": legit})
 
-    # Check registry for additional risk factors
-    try:
-        if eco == "pypi":
-            r = requests.get(
-                f"https://pypi.org/pypi/{pkg}/json",
-                timeout=3
-            )
-            if r.status_code == 200:
-                data = r.json()
-                rel = data.get("releases", {})
-                if rel:
-                    first = list(rel.keys())[0]
-                    t = rel[first][0]["upload_time_iso_8601"]
-                    age = (
-                        datetime.utcnow() -
-                        datetime.fromisoformat(t.replace("Z", ""))
-                    ).days
-                    if age < 7:
-                        res["risks"].append({"type": "NEW_PACKAGE"})
-        elif eco == "npm":
-            r = requests.get(
-                f"https://registry.npmjs.org/{pkg}",
-                timeout=3
-            )
-            if r.status_code == 200:
-                data = r.json()
-                if len(data.get("versions", {})) < 5:
-                    res["risks"].append({"type": "LOW_POPULARITY"})
-    except Exception:
-        pass
+    # Check registry for additional risk factors (only if not already malicious)
+    if not any(r["type"] == "MALICIOUS_KNOWN" for r in res["risks"]):
+        try:
+            if eco == "pypi":
+                r = requests.get(
+                    f"https://pypi.org/pypi/{pkg}/json",
+                    timeout=3
+                )
+                if r.status_code == 200:
+                    data = r.json()
+                    rel = data.get("releases", {})
+                    if rel:
+                        first = list(rel.keys())[0]
+                        t = rel[first][0]["upload_time_iso_8601"]
+                        age = (
+                            datetime.utcnow() -
+                            datetime.fromisoformat(t.replace("Z", ""))
+                        ).days
+                        if age < 7:
+                            res["risks"].append({"type": "NEW_PACKAGE"})
+            elif eco == "npm":
+                r = requests.get(
+                    f"https://registry.npmjs.org/{pkg}",
+                    timeout=3
+                )
+                if r.status_code == 200:
+                    data = r.json()
+                    if len(data.get("versions", {})) < 5:
+                        res["risks"].append({"type": "LOW_POPULARITY"})
+        except Exception:
+            pass
 
     res["risk_score"] = score(res["risks"])
     return res
@@ -91,7 +92,7 @@ def analyze_package(pkg, eco):
 def format_terminal_output(result):
     """Format result for terminal display (single package)"""
     pkg = result["package"]
-    score = result["risk_score"]
+    score_val = result["risk_score"]
     risks = result["risks"]
 
     # Color codes
@@ -102,13 +103,13 @@ def format_terminal_output(result):
     NC = '\033[0m'
 
     # Determine status
-    if score == 0:
+    if score_val == 0:
         status = f"{GREEN}✅ SAFE{NC}"
         status_text = "No risks found"
-    elif score < 50:
+    elif score_val < 50:
         status = f"{YELLOW}⚠️  CAUTION{NC}"
         status_text = "Some suspicious indicators"
-    elif score < 80:
+    elif score_val < 80:
         status = f"{YELLOW}⚠️⚠️ HIGH RISK{NC}"
         status_text = "Multiple risk factors detected"
     else:
@@ -122,7 +123,7 @@ def format_terminal_output(result):
     print(f"Package:     {pkg}")
     print(f"Ecosystem:   {result['ecosystem']}")
     print(f"Status:      {status}")
-    print(f"Risk Score:  {score}/100")
+    print(f"Risk Score:  {score_val}/100")
     print(f"Details:     {status_text}\n")
 
     if risks:
@@ -145,7 +146,7 @@ def format_terminal_output(result):
 
     print(f"{BLUE}{'='*50}{NC}\n")
 
-    return score
+    return score_val
 
 
 if __name__ == "__main__":
@@ -155,11 +156,26 @@ if __name__ == "__main__":
 
     pkg = sys.argv[1]
     eco = sys.argv[2]
-
+    
+    # Check if terminal output mode
+    terminal_mode = len(sys.argv) > 3 and sys.argv[3] == "--terminal"
+    
+    # If ecosystem is "pypi" (default) and package not found, search all ecosystems
+    if terminal_mode and eco == "pypi" and pkg not in MAL_DB.get("pypi", {}):
+        # Search in all ecosystems
+        found_in_eco = None
+        for e in MAL_DB:
+            if pkg in MAL_DB[e]:
+                found_in_eco = e
+                break
+        
+        if found_in_eco:
+            eco = found_in_eco
+    
     result = analyze_package(pkg, eco)
     
     # Check if running in single package mode (from command line)
-    if len(sys.argv) == 4 and sys.argv[3] == "--terminal":
+    if terminal_mode:
         # Terminal output mode (for single package check)
         risk_score = format_terminal_output(result)
         sys.exit(0 if risk_score < 80 else 1)
