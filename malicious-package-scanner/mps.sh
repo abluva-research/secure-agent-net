@@ -32,10 +32,13 @@ print_info() {
 ensure_dataset() {
     if [ ! -d "$CACHE_DIR" ]; then
         print_info "Fetching OpenSSF malicious packages dataset..."
-        git clone -q https://github.com/ossf/malicious-packages "$CACHE_DIR"
+        cd "$SCRIPT_DIR"
+        git clone https://github.com/ossf/malicious-packages 2>/dev/null || true
     else
         print_info "Updating existing malicious dataset..."
-        cd "$CACHE_DIR" && git pull -q origin main 2>/dev/null && cd "$SCRIPT_DIR"
+        cd "$CACHE_DIR" 2>/dev/null
+        timeout 10 git pull origin main 2>/dev/null || true
+        cd "$SCRIPT_DIR" 2>/dev/null
     fi
     print_success "Dataset ready"
 }
@@ -136,13 +139,13 @@ scan_sbom_file() {
 
 # Main logic
 if [ $# -eq 0 ]; then
-    print_error "Usage: $0 <package-name|purl|sbom.json>"
+    print_error "Usage: mallscan <package-name|purl|sbom.json>"
     echo ""
     echo "Examples:"
-    echo "  $0 requests                              # Check PyPI package"
-    echo "  $0 pkg:pypi/requests@2.31.0             # Check with PURL"
-    echo "  $0 pkg:npm/lodash@4.17.21               # Check NPM package"
-    echo "  $0 sbom.json                             # Scan SBOM file (result in same dir)"
+    echo "  mallscan requests                              # Check PyPI package"
+    echo "  mallscan pkg:pypi/requests@2.31.0             # Check with PURL"
+    echo "  mallscan pkg:npm/lodash@4.17.21               # Check NPM package"
+    echo "  mallscan sbom.json                             # Scan SBOM file"
     exit 1
 fi
 
