@@ -186,3 +186,4 @@ else
     check_single_package "$input"
     exit $?
 fi
+
