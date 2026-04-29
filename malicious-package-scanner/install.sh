@@ -4,6 +4,7 @@
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 RED='\033[0;31m'
+YELLOW='\033[1;33m'
 NC='\033[0m'
 
 INSTALL_DIR="${1:-/usr/local/lib/malicious-package-scanner}"
@@ -41,9 +42,12 @@ cp requirements.txt "$INSTALL_DIR/" || { echo -e "${RED}[!] Failed to copy requi
 cp README.md "$INSTALL_DIR/" || { echo -e "${RED}[!] Failed to copy README.md${NC}"; exit 1; }
 
 # Make scripts executable
-chmod +x "$INSTALL_DIR/mps.sh"
-chmod +x "$INSTALL_DIR/malicious_db_loader.py"
-chmod +x "$INSTALL_DIR/risk_engine.py"
+chmod +x "$INSTALL_DIR/mps.sh" || true
+chmod +x "$INSTALL_DIR/malicious_db_loader.py" || true
+chmod +x "$INSTALL_DIR/risk_engine.py" || true
+
+# Remove old mallscan if exists
+rm -f "$BIN_DIR/mallscan" 2>/dev/null || true
 
 # Create bin directory if it doesn't exist
 mkdir -p "$BIN_DIR"
@@ -59,17 +63,40 @@ chmod +x "$BIN_DIR/mallscan"
 
 # Install Python dependencies
 echo "Installing Python dependencies..."
-pip install -q -r "$INSTALL_DIR/requirements.txt" 2>/dev/null || pip3 install -q -r "$INSTALL_DIR/requirements.txt"
+pip install -q -r "$INSTALL_DIR/requirements.txt" 2>/dev/null || pip3 install -q -r "$INSTALL_DIR/requirements.txt" 2>/dev/null || true
+
+# Clone malicious packages dataset
+echo "Cloning OpenSSF malicious packages dataset..."
+cd "$INSTALL_DIR"
+if [ ! -d "malicious-packages" ]; then
+    git clone https://github.com/ossf/malicious-packages 2>/dev/null || {
+        echo -e "${YELLOW}[!] Could not clone dataset, will do it on first run${NC}"
+    }
+fi
+
+# Build initial index
+echo "Building initial malicious package index..."
+python3 "$INSTALL_DIR/malicious_db_loader.py" 2>&1 | grep -v "^\[" || true
 
 echo ""
 echo -e "${GREEN}✓ Installation complete!${NC}"
 echo ""
 echo "You can now run the scanner from anywhere:"
-echo "  mallscan /path/to/sbom.json"
 echo "  mallscan requests"
 echo "  mallscan pkg:pypi/requests@2.31.0"
+echo "  mallscan sbom.json"
 echo ""
 echo "Installation directory: $INSTALL_DIR"
 echo "Executable location: $BIN_DIR/mallscan"
+echo ""
+
+# Test installation
+if command -v mallscan &> /dev/null; then
+    echo -e "${GREEN}✓ Command 'mallscan' is available!${NC}"
+else
+    echo -e "${YELLOW}[!] To use mallscan, add to PATH or restart your terminal${NC}"
+    echo "    export PATH=\"$BIN_DIR:\$PATH\""
+fi
+
 echo ""
 echo -e "${GREEN}✓ Ready to use!${NC}"
