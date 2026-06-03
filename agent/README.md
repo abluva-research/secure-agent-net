@@ -12,7 +12,12 @@ Connect your Kubernetes cluster to the Abluva platform in minutes. This guide wa
 2. Navigate to the **Environments** page
 3. Click **Generate Skupper Token**
 4. Download or copy the token and save it as a file (e.g., `token.yaml`)
-5. Click Activate,Choose the template[SaaS/Hybrid] and Get the namespace from description of task 2.
+5. Namespace will be displayed in the UI itself please copy and use it while setup.
+6.After deploying the agent create a resource under Resources Tab->Add Resource->Select Tenant->Give any Resource Name->Choose Resource Type as "agent#https"->Next->Choose Credentials as Authentication Type->In the JSON box add the url as 
+{
+  "base_url": "listener-host.namespace.svc.cluster.local:port",
+  "endpoint": "/api/v1/launcher/create"
+}
 
 > **Note**: The token expires after a limited time. Complete the setup promptly after generating it.
 
