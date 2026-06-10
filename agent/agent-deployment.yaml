@@ -96,6 +96,6 @@ metadata:
   name: agent-connector
   namespace: <tenant-namespace>
 spec:
-  routingKey: agent
+  routingKey: agent-<first_six_characters_of_namespace>
   selector: tier=agent
   port: 5004
