@@ -310,8 +310,9 @@ echo "[7/8] Skupper Listeners"
 echo "============================================================"
 
 echo "Creating listeners for remote services..."
-skupper listener create control-client --host control-client --port 80 --routing-key control-client-<first-eight-chars-of-tenantId>
-skupper listener create control-server --host control-server --port 80 --routing-key control-server-<first-eight-chars-of-tenantId>
+TENANT_PREFIX=$(echo "$NAMESPACE_NAME" | cut -c1-8)
+skupper listener create control-client --host control-client --port 80 --routing-key "control-client-${TENANT_PREFIX}"
+skupper listener create control-server --host control-server --port 80 --routing-key "control-server-${TENANT_PREFIX}"
 
 echo "[OK] Listeners created."
 echo "  Available services in this namespace:"
