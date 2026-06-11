@@ -301,8 +301,8 @@ fi
 # routingKey. Traffic is routed through the Skupper link.
 #
 # Listeners created:
-#   - control-client:80  (routingKey: control-client-<first-eight-chars-of-tenantId>)
-#   - control-server:80 (routingKey: control-server-<first-eight-chars-of-tenantId>)
+#   - control-client:80  (routingKey: control-client)
+#   - control-server:80 (routingKey: control-server)
 # ============================================================
 echo ""
 echo "============================================================"
@@ -310,9 +310,8 @@ echo "[7/8] Skupper Listeners"
 echo "============================================================"
 
 echo "Creating listeners for remote services..."
-TENANT_PREFIX=$(echo "$NAMESPACE_NAME" | cut -c1-8)
-skupper listener create control-client 80 --host control-client --routing-key "control-client-${TENANT_PREFIX}"
-skupper listener create control-server 80 --host control-server --routing-key "control-server-${TENANT_PREFIX}"
+skupper listener create control-client 80 --host control-client --routing-key "control-client"
+skupper listener create control-server 80 --host control-server --routing-key "control-server"
 
 echo "[OK] Listeners created."
 echo "  Available services in this namespace:"
