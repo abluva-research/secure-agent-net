@@ -297,8 +297,8 @@ fi
 # routingKey. Traffic is routed through the Skupper link.
 #
 # Listeners created:
-#   - control-client:80  (routingKey: control-client)
-#   - control-server:5001 (routingKey: control-server)
+#   - control-client:80  (routingKey: control-client-<first-eight-chars-of-tenantId>)
+#   - control-server:80 (routingKey: control-server-<first-eight-chars-of-tenantId>)
 # ============================================================
 echo ""
 echo "============================================================"
@@ -306,8 +306,8 @@ echo "[7/8] Skupper Listeners"
 echo "============================================================"
 
 echo "Creating listeners for remote services..."
-skupper listener create control-client --host control-client --port 80 --routing-key control-client-<eight-chars-of-tenantId>
-skupper listener create control-server --host control-server --port 80 --routing-key control-server-<eight-chars-of-tenantId>
+skupper listener create control-client --host control-client --port 80 --routing-key control-client-<first-eight-chars-of-tenantId>
+skupper listener create control-server --host control-server --port 80 --routing-key control-server-<first-eight-chars-of-tenantId>
 
 echo "[OK] Listeners created."
 echo "  Available services in this namespace:"
@@ -361,10 +361,10 @@ echo "  Link Status:    $(skupper link status 2>/dev/null | grep -o 'Ready' | he
 echo ""
 echo "  Services (via Skupper):"
 echo "    control-client:80   → SaaS web UI"
-echo "    control-server:5001 → SaaS API"
+echo "    control-server:80 → SaaS API"
 echo ""
 echo "  Verify connectivity:"
 echo "    kubectl exec -it deployment/abluva-agent -n $NAMESPACE_NAME -- \\"
-echo "      curl --max-time 10 http://control-server:5001/api/v1/control/tenants"
+echo "      curl --max-time 10 http://control-server:80/api/v1/control/tenants"
 echo ""
 echo "============================================================"
