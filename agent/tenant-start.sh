@@ -306,13 +306,13 @@ echo "[7/8] Skupper Listeners"
 echo "============================================================"
 
 echo "Creating listeners for remote services..."
-skupper listener create control-client --host control-client --port 80 --routing-key control-client
-skupper listener create control-server --host control-server --port 5001 --routing-key control-server
+skupper listener create control-client --host control-client --port 80 --routing-key control-client-<eight-chars-of-tenantId>
+skupper listener create control-server --host control-server --port 80 --routing-key control-server-<eight-chars-of-tenantId>
 
 echo "[OK] Listeners created."
 echo "  Available services in this namespace:"
 echo "    - control-client:80   → SaaS control-client"
-echo "    - control-server:5001 → SaaS control-server API"
+echo "    - control-server:80 → SaaS control-server API"
 
 # ============================================================
 # [8/8] TENANT-LEVEL: Agent Deployment
@@ -321,7 +321,7 @@ echo "    - control-server:5001 → SaaS control-server API"
 #   - Applies Kubernetes manifests on the tenant cluster
 #   - Reports task status back to the SaaS platform
 #
-# The agent uses the Skupper listener (control-server:5001)
+# The agent uses the Skupper listener (control-server:80)
 # to communicate with the SaaS cluster.
 # ============================================================
 echo ""
