@@ -20,7 +20,7 @@
 #   - Token YAML generated from the SaaS cluster (via AccessGrant)
 #   - metallb.yaml in the current directory (if no LB configured)
 #   - Network connectivity to SaaS cluster on ports 55671, 45671
-#   - agent/agent-deployment.yaml available
+#   - agent-deployment.yaml available
 #
 # Security Notes:
 #   - Token files provide access to the application network — handle securely
@@ -311,8 +311,8 @@ echo "============================================================"
 
 echo "Creating listeners for remote services..."
 TENANT_PREFIX=$(echo "$NAMESPACE_NAME" | cut -c1-8)
-skupper listener create control-client --host control-client --port 80 --routing-key "control-client-${TENANT_PREFIX}"
-skupper listener create control-server --host control-server --port 80 --routing-key "control-server-${TENANT_PREFIX}"
+skupper listener create control-client 80 --host control-client --routing-key "control-client-${TENANT_PREFIX}"
+skupper listener create control-server 80 --host control-server --routing-key "control-server-${TENANT_PREFIX}"
 
 echo "[OK] Listeners created."
 echo "  Available services in this namespace:"
@@ -334,15 +334,15 @@ echo "============================================================"
 echo "[8/8] Agent Deployment"
 echo "============================================================"
 
-if [ ! -f "agent/agent-deployment.yaml" ]; then
-  echo "Warning: agent/agent-deployment.yaml not found."
+if [ ! -f "agent-deployment.yaml" ]; then
+  echo "Warning: agent-deployment.yaml not found."
   echo "         Skipping agent deployment."
 else
   echo "Deploying Abluva agent..."
   kubectl apply -f agent-deployment.yaml
 
   echo "Waiting for agent to be available..."
-  kubectl wait deployment/abluva-agent \
+  kubectl wait deployment/agent \
     -n "$NAMESPACE_NAME" \
     --for=condition=Available \
     --timeout="$AGENT_TIMEOUT"
@@ -369,7 +369,7 @@ echo "    control-client:80   → SaaS web UI"
 echo "    control-server:80 → SaaS API"
 echo ""
 echo "  Verify connectivity:"
-echo "    kubectl exec -it deployment/abluva-agent -n $NAMESPACE_NAME -- \\"
+echo "    kubectl exec -it deployment/agent -n $NAMESPACE_NAME -- \\"
 echo "      curl --max-time 10 http://control-server:80/api/v1/control/tenants"
 echo ""
 echo "============================================================"
