@@ -20,7 +20,7 @@
 #   - Token YAML generated from the SaaS cluster (via AccessGrant)
 #   - metallb.yaml in the current directory (if no LB configured)
 #   - Network connectivity to SaaS cluster on ports 55671, 45671
-#   - agent-deployment/agent-deployment.yaml available
+#   - agent/agent-deployment.yaml available
 #
 # Security Notes:
 #   - Token files provide access to the application network — handle securely
@@ -329,8 +329,8 @@ echo "============================================================"
 echo "[8/8] Agent Deployment"
 echo "============================================================"
 
-if [ ! -f "agent-deployment/agent-deployment.yaml" ]; then
-  echo "Warning: agent-deployment/agent-deployment.yaml not found."
+if [ ! -f "agent/agent-deployment.yaml" ]; then
+  echo "Warning: agent/agent-deployment.yaml not found."
   echo "         Skipping agent deployment."
 else
   echo "Deploying Abluva agent..."
