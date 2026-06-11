@@ -334,7 +334,7 @@ if [ ! -f "agent-deployment/agent-deployment.yaml" ]; then
   echo "         Skipping agent deployment."
 else
   echo "Deploying Abluva agent..."
-  kubectl apply -f agent-deployment/agent-deployment.yaml
+  kubectl apply -f agent-deployment.yaml
 
   echo "Waiting for agent to be available..."
   kubectl wait deployment/abluva-agent \
