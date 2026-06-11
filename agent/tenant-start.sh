@@ -222,7 +222,11 @@ echo "[5/8] Skupper Site"
 echo "============================================================"
 
 echo "Creating Skupper site: $NAMESPACE_NAME"
-skupper site create "$NAMESPACE_NAME"
+if kubectl get site "$NAMESPACE_NAME" -n "$NAMESPACE_NAME" >/dev/null 2>&1; then
+  echo "[SKIP] Skupper site already exists."
+else
+  skupper site create "$NAMESPACE_NAME"
+fi
 
 echo "Waiting for site to become ready..."
 site_elapsed=0
