@@ -36,14 +36,16 @@ mkdir -p "$INSTALL_DIR" || { echo -e "${RED}[!] Failed to create directory${NC}"
 # Copy files
 echo "Copying application files..."
 cp malicious_db_loader.py "$INSTALL_DIR/" || { echo -e "${RED}[!] Failed to copy malicious_db_loader.py${NC}"; exit 1; }
+cp osv_dataset_manager.py "$INSTALL_DIR/" || { echo -e "${RED}[!] Failed to copy osv_dataset_manager.py${NC}"; exit 1; } 
 cp risk_engine.py "$INSTALL_DIR/" || { echo -e "${RED}[!] Failed to copy risk_engine.py${NC}"; exit 1; }
-cp mps.sh "$INSTALL_DIR/" || { echo -e "${RED}[!] Failed to copy mps.sh${NC}"; exit 1; }
+cp mallscan.sh "$INSTALL_DIR/" || { echo -e "${RED}[!] Failed to copy mallscan.sh${NC}"; exit 1; }
 cp requirements.txt "$INSTALL_DIR/" || { echo -e "${RED}[!] Failed to copy requirements.txt${NC}"; exit 1; }
 cp README.md "$INSTALL_DIR/" || { echo -e "${RED}[!] Failed to copy README.md${NC}"; exit 1; }
 
 # Make scripts executable
-chmod +x "$INSTALL_DIR/mps.sh" || true
+chmod +x "$INSTALL_DIR/mallscan.sh" || true
 chmod +x "$INSTALL_DIR/malicious_db_loader.py" || true
+chmod +x "$INSTALL_DIR/osv_dataset_manager.py" || true
 chmod +x "$INSTALL_DIR/risk_engine.py" || true
 
 # Remove old mallscan if exists
@@ -56,7 +58,7 @@ mkdir -p "$BIN_DIR"
 cat > "$BIN_DIR/mallscan" << 'WRAPPER'
 #!/bin/bash
 INSTALL_DIR="$(dirname "$(readlink -f "$0")")/../lib/malicious-package-scanner"
-exec "$INSTALL_DIR/mps.sh" "$@"
+exec "$INSTALL_DIR/mallscan.sh" "$@"
 WRAPPER
 
 chmod +x "$BIN_DIR/mallscan"
