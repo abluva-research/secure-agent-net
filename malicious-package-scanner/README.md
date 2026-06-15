@@ -22,6 +22,9 @@ unzip malicious-package-scanner.zip
 cd malicious-package-scanner
 chmod +x install.sh
 sudo ./install.sh
+
+#Dockefile
+docker build -t mallscan 
 ```
 
 ### Usage
@@ -29,14 +32,17 @@ sudo ./install.sh
 ```bash
 # Check single package by name
 mallscan requests
+docker run --rm mallscan requests@2.31.0
 
 # Check with PURL format
 mallscan pkg:pypi/requests@2.31.0
 mallscan pkg:npm/lodash@4.17.21
+docker run --rm mallscan pkg:pypi/requests@2.31.0
 
 # Scan entire SBOM file
 mallscan sbom.json
 # Output: {sbom-file-path}/sbom-results.json
+docker run --rm mallscan {sbom-file-path}/sbom-results.json
 ```
 
 ## 📋 How It Works
