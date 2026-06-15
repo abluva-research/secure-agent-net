@@ -24,7 +24,7 @@ chmod +x install.sh
 sudo ./install.sh
 
 #Dockefile
-docker build -t mallscan 
+docker build -t mallscan .
 ```
 
 ### Usage
