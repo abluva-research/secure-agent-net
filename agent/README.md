@@ -13,7 +13,9 @@ Connect your Kubernetes cluster to the Abluva platform in minutes. This guide wa
 3. Click **Generate Skupper Token**
 4. Download or copy the token and save it as a file (e.g., `token.yaml`)
 5. Namespace will be displayed in the UI itself please copy and use it while setup.
-6. Copy the token displayed in the UI and later before running the script,Add it to the env placeholer[ABLV_TOKEN_PLACEHOLDER] in the yaml.
+6. Copy the token displayed in the UI and later before running the script.
+7. Get the tenantId from tenants page->click eye button->get the ID.Get the environmentId from environments page->click eye button->get the ID. 
+8. Replace namespace,token,tenantId,environmentId to their respective placeholers in the agent-deployment.yaml.
 
 > **Note**: The token expires after a limited time. Complete the setup promptly after generating it.
 
