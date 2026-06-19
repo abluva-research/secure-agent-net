@@ -76,19 +76,10 @@ The script automatically performs the following:
 | 4 | Create tenant namespace | Idempotent |
 | 5 | Create Skupper site | Deploys the skupper-router |
 | 6 | Redeem token | Establishes secure link to the Abluva platform |
-| 7 | Create listeners | Makes platform services accessible locally |
+| 7 | Create listener | Makes platform service accessible locally |
 | 8 | Deploy agent | Connects to the Abluva control plane |
 
 ---
-
-## Step 5: Verify
-
-After the script completes, verify the connection:
-
-```bash
-kubectl exec -it deployment/agent -n <namespace> -- \
-  curl --max-time 10 http://control-server:80/api/v1/control/tenants
-```
 
 A JSON response with tenant data confirms the setup is working.
 
