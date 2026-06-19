@@ -73,6 +73,8 @@ spec:
           env:
             - name: TASK_URL
               value: "http://control-server:80/api/v1/control/tasks"
+            - name: X_ABLV_TOKEN
+              value: "<ABLV_TOKEN_PLACEHOLDER>"  
 ---
 apiVersion: v1
 kind: Service
