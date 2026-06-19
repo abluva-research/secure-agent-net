@@ -75,6 +75,10 @@ spec:
               value: "http://control-server:80/api/v1/control/tasks"
             - name: X_ABLV_TOKEN
               value: "<ABLV_TOKEN_PLACEHOLDER>"  
+            - name: X_ABLV_TENANT_ID
+              value: "<TENANT_ID_PLACEHOLDER>"
+            - name: X_ABLV_ENVIRONMENT_ID
+              value: "<ENVIRONMENT_ID_PLACEHOLDER>"  
 ---
 apiVersion: v1
 kind: Service
