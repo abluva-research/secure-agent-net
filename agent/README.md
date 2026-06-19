@@ -12,28 +12,41 @@ Connect your Kubernetes cluster to the Abluva platform in minutes. This guide wa
 2. Navigate to the **Environments** page
 3. Click **Generate Skupper Token**
 4. Download or copy the token and save it as a file (e.g., `token.yaml`)
-5. Namespace will be displayed in the UI itself please copy and use it while setup.
-6. Copy the token displayed in the UI and later before running the script.
-7. Get the tenantId from tenants page->click eye button->get the ID.Get the environmentId from environments page->click eye button->get the ID. 
-8. Replace namespace,token,tenantId,environmentId to their respective placeholers in the agent-deployment.yaml.
 
-> **Note**: The token expires after a limited time. Complete the setup promptly after generating it.
+> **Note**: The token is single-use and expires after a limited time. Complete the setup promptly after generating it.
 
 ---
 
-## Step 2: Prerequisites
+## Step 2: Get Namespace, Environment ID, and SAAS-API-KEY
+
+### Namespace and Environment ID
+1. In the same **Environments** page, click the dropdown arrow on your environment
+2. Under the **Details** section, you will find:
+   - **Namespace** 
+   - **Environment ID**
+
+### SAAS-API-KEY
+1. In the **Environments** page, click the API Key button
+2. It retrieves the key from OCI Vault and displays it
+
+Save these values — you'll need them in Step 5.
+
+---
+
+## Step 3: Prerequisites
 
 Ensure the following on the machine where you'll run the setup:
 
 - [ ] **Kubernetes cluster** with `cluster-admin` access
 - [ ] **kubectl** installed and configured to point to your cluster
 - [ ] **curl** installed
-- [ ] **Network connectivity** — your cluster nodes must be able to reach the Abluva platform on TCP ports **55671** and **45671**
-- [ ] **Token file, Namespace, Token** saved from Step 1
+- [ ] **Network connectivity** — your cluster nodes must be able to reach the Abluva platform on TCP ports **443**, **55671**, and **45671**
+- [ ] **Token file** saved from Step 1
+- [ ] **Namespace, Environment ID, SAAS-API-KEY** from Step 2
 
 ---
 
-## Step 3: Clone the Setup Repository
+## Step 4: Clone the Setup Repository
 
 ```bash
 git clone https://github.com/abluva-research/secure-agent-net.git
@@ -42,7 +55,25 @@ cd agent
 
 ---
 
-## Step 4: Run the Setup Script
+## Step 5: Configure Agent Deployment
+
+Open `agent-deployment.yaml` and replace the placeholders with your actual values:
+
+```yaml
+env:
+  - name: SAAS_API_KEY
+    value: "<your-saas-api-key>"
+  - name: X_ABLV_Tenant_ID
+    value: "<your-tenant-id>"
+  - name: X_ABLV_Environment_ID
+    value: "<your-environment-id>"
+```
+
+Also update the namespace in the YAML metadata to match your tenant namespace.
+
+---
+
+## Step 6: Run the Setup Script
 
 ```bash
 chmod +x tenant-start.sh
@@ -66,42 +97,76 @@ Is a LoadBalancer configured in the cluster? [yes/no]
 
 ## What the Script Does
 
-The script automatically performs the following:
-
 | Step | Action | Notes |
 |------|--------|-------|
 | 1 | Install Skupper controller | Skipped if already installed |
-| 2 | Install Skupper CLI | Skipped if already installed |
-| 3 | Install MetalLB | Only if no LoadBalancer configured |
-| 4 | Create tenant namespace | Idempotent |
-| 5 | Create Skupper site | Deploys the skupper-router |
-| 6 | Redeem token | Establishes secure link to the Abluva platform |
-| 7 | Create listener | Makes platform service accessible locally |
-| 8 | Deploy agent | Connects to the Abluva control plane |
+| 2 | Install MetalLB | Only if no LoadBalancer configured |
+| 3 | Create tenant namespace | Idempotent (format: `<tenant-id>-<env-id>`) |
+| 4 | Create Skupper Site | Deploys skupper-router in your namespace |
+| 5 | Redeem token | Establishes mTLS link to the Abluva platform |
+| 6 | Create Listeners | Makes platform services accessible locally as `control-server:80` and `control-client:80` |
+| 7 | Deploy agent | Your agent connects to control-server through the secure link |
 
 ---
+
+## Step 7: Verify Setup
+
+```bash
+NAMESPACE=<your-tenant-namespace>
+
+# Check all pods are running
+kubectl get pods -n $NAMESPACE
+
+# Verify Skupper site (should show Ready)
+kubectl get site -n $NAMESPACE
+
+# Verify link is active (should show Ready)
+kubectl get links -n $NAMESPACE
+
+# Verify listeners exist
+kubectl get listener -n $NAMESPACE
+
+# Verify control-server service was created by listener
+kubectl get svc control-server -n $NAMESPACE
+
+```
 
 A JSON response with tenant data confirms the setup is working.
 
-You can also check:
-```bash
-# Site status (should show SITES IN NETWORK: 2)
-kubectl get site -n <namespace>
+---
 
-# Link status (should show Ready)
-skupper link status --namespace <namespace>
+## Step 8: Register Resource in Platform
 
-# All pods running
-kubectl get pods -n <namespace>
+After the agent is deployed and verified:
+
+1. Navigate to **Resources Tab** → **Add Resource**
+2. Select your **Tenant**
+3. Give a **Resource Name**
+4. Choose Resource Type: `agent#https`
+5. Click **Next**
+6. Choose **Credentials** as Authentication Type
+7. In the JSON box, add:
+
+```json
+{
+  "base_url": "agent.<namespace>.svc.cluster.local:5004",
+  "endpoint": "/api/v1/launcher/create"
+}
 ```
+
+Replace `<namespace>` with your tenant namespace.
 
 ---
 
-After deploying the agent create a resource under Resources Tab->Add Resource->Select Tenant->Give any Resource Name->Choose Resource Type as "agent#https"->Next->Choose Credentials as Authentication Type->In the JSON box add the url as 
-{
-  "base_url": "agent.namespace.svc.cluster.local:5004",
-  "endpoint": "/api/v1/launcher/create"
-}
+## Service Endpoint Available
+
+Once connected, your agent can call these service:
+
+| Service | URL from your cluster | Purpose |
+|---------|----------------------|---------|
+| Control Server | `http://control-server:80` | Platform API (tasks, tenants, environments, subscriptions) |
+
+---
 
 ## Troubleshooting
 
@@ -109,15 +174,13 @@ After deploying the agent create a resource under Resources Tab->Add Resource->S
 
 **Cause**: MetalLB IP collision between your cluster and the platform.
 
-**Fix**: Ensure your `metallb.yaml` uses a unique IP range that doesn't overlap with the platform cluster. Contact Abluva support if unsure.
-
-**Alternative**: Request a link file from Abluva support instead of using a token.
+**Fix**: Ensure your MetalLB uses a unique IP range that doesn't overlap with the platform cluster (172.16.1.200-219). Contact Abluva support if unsure.
 
 ### Site stuck in Pending
 
 **Cause**: The skupper-router pod can't reach the Kubernetes API server.
 
-**Fix**: Find your API server endpoint and ensure network access:
+**Fix**: Verify API server access:
 ```bash
 kubectl get endpoints kubernetes -n default
 ```
@@ -126,30 +189,34 @@ kubectl get endpoints kubernetes -n default
 
 **Cause**: Your cluster can't reach the container registry.
 
-**Fix**: Contact Abluva support for alternative image delivery options or configure your cluster to trust the registry.
+**Fix**: Contact Abluva support for alternative image delivery or configure registry trust.
 
 ### Link shows Ready but agent can't reach control-server
 
-**Fix**: Check listeners exist:
+**Cause**: Listeners may not be created, or the control-server service doesn't exist.
+
+**Fix**:
 ```bash
-kubectl get listeners -n <namespace>
-kubectl get svc control-server -n <namespace>
+# Check listeners
+kubectl get listener -n $NAMESPACE
+
+# Check services (control-server should exist)
+kubectl get svc -n $NAMESPACE
+
+# Check link has matching connector
+kubectl describe listener control-server -n $NAMESPACE
+# STATUS should be Ready, HAS MATCHING CONNECTOR should be true
 ```
 
----
+### Request hangs (timeout)
 
-## Security
+**Cause**: NetworkPolicy on the SaaS cluster may be blocking traffic, or skupper-router can't reach the proxy.
 
-- All cross-cluster traffic is encrypted via **mutual TLS** (managed automatically by Skupper)
-- The agent has **namespace-scoped permissions only** — it cannot access other namespaces on your cluster
-- The token is single-use and time-limited
-- No inbound ports need to be opened on your cluster — the link is established outbound
+**Fix**: Contact Abluva support — this is a platform-side issue.
 
 ---
 
 ## Support
 
-If you encounter issues during setup, contact Abluva support with:
-- Output of `kubectl get site -n <namespace> -o yaml`
-- Output of `kubectl get links -n <namespace> -o yaml`
-- Output of `kubectl get pods -n <namespace>`
+If you encounter issues, contact Abluva support.
+```
