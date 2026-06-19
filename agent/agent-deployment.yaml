@@ -74,7 +74,7 @@ spec:
             - name: TASK_URL
               value: "http://control-server:80/api/v1/control/tasks"
             - name: SAAS_API_KEY
-              value: "<ABLV_TOKEN_PLACEHOLDER>"  
+              value: "<SAAS_API_KEY_PLACEHOLDER>"  
             - name: X_ABLV_Tenant_ID
               value: "<TENANT_ID_PLACEHOLDER>"
             - name: X_ABLV_Environment_ID
