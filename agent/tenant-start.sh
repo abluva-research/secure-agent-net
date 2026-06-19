@@ -37,7 +37,7 @@
 #     4. Namespace creation
 #     5. Skupper site creation
 #     6. Token redemption (cross-cluster link)
-#     7. Skupper listeners (control-server, control-client)
+#     7. Skupper listener (control-server)
 #     8. Agent deployment
 # ============================================================
 
@@ -293,29 +293,26 @@ else
 fi
 
 # ============================================================
-# [7/8] TENANT-LEVEL: Skupper Listeners
-# Creates listeners that expose remote services (from the SaaS
+# [7/8] TENANT-LEVEL: Skupper Listener
+# Creates listener that expose remote services (from the SaaS
 # cluster) as local ClusterIP services in this namespace.
 #
 # Each listener matches a Connector on the SaaS cluster by
 # routingKey. Traffic is routed through the Skupper link.
 #
 # Listeners created:
-#   - control-client:80  (routingKey: control-client)
 #   - control-server:80 (routingKey: control-server)
 # ============================================================
 echo ""
 echo "============================================================"
-echo "[7/8] Skupper Listeners"
+echo "[7/8] Skupper Listener"
 echo "============================================================"
 
-echo "Creating listeners for remote services..."
-skupper listener create control-client 80 --host control-client --routing-key "control-client"
+echo "Creating listener for remote service..."
 skupper listener create control-server 80 --host control-server --routing-key "control-server"
 
-echo "[OK] Listeners created."
-echo "  Available services in this namespace:"
-echo "    - control-client:80   → SaaS control-client"
+echo "[OK] Listener created."
+echo "  Available service in this namespace:"
 echo "    - control-server:80 → SaaS control-server API"
 
 # ============================================================
@@ -363,12 +360,8 @@ echo "  Skupper Site:   $(kubectl get site "$NAMESPACE_NAME" -o jsonpath='{.stat
 echo "  Sites in Net:   $(kubectl get site "$NAMESPACE_NAME" -o jsonpath='{.status.sitesInNetwork}' 2>/dev/null || echo 'Unknown')"
 echo "  Link Status:    $(skupper link status 2>/dev/null | grep -o 'Ready' | head -1 || echo 'Pending')"
 echo ""
-echo "  Services (via Skupper):"
-echo "    control-client:80   → SaaS web UI"
+echo "  Service (via Skupper):"
 echo "    control-server:80 → SaaS API"
 echo ""
-echo "  Verify connectivity:"
-echo "    kubectl exec -it deployment/agent -n $NAMESPACE_NAME -- \\"
-echo "      curl --max-time 10 http://control-server:80/api/v1/control/tenants"
 echo ""
 echo "============================================================"
