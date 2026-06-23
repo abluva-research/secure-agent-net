@@ -71,7 +71,7 @@ spec:
           ports:
             - containerPort: 5004
           env:
-             - name: TenantApiBase
+             - name: INFRA_BASE_URL
               value: "http://control-server:80"
             - name: SAAS_API_KEY
               value: "<SAAS_API_KEY_PLACEHOLDER>"  
