@@ -78,7 +78,9 @@ spec:
             - name: X_ABLV_Tenant_ID
               value: "<TENANT_ID_PLACEHOLDER>"
             - name: X_ABLV_Environment_ID
-              value: "<ENVIRONMENT_ID_PLACEHOLDER>"  
+              value: "<ENVIRONMENT_ID_PLACEHOLDER>" 
+            - name: X_ABLV_Principal
+              value: "<PRINCIPAL_PLACEHOLDER>"  
 ---
 apiVersion: v1
 kind: Service
