@@ -17,7 +17,7 @@ Connect your Kubernetes cluster to the Abluva platform in minutes. This guide wa
 
 ---
 
-## Step 2: Get Namespace, Environment ID, and SAAS-API-KEY
+## Step 2: Get Namespace, Tenant ID, Environment ID, and SAAS-API-KEY
 
 ### Namespace and Environment ID
 1. In the same **Environments** page, click the dropdown arrow on your environment
@@ -26,8 +26,11 @@ Connect your Kubernetes cluster to the Abluva platform in minutes. This guide wa
    - **Environment ID**
 
 ### SAAS-API-KEY
-1. In the **Environments** page, click the API Key button
-2. It retrieves the key from OCI Vault and displays it
+1. In the **Environments** page, click the Generate API Key button
+2. It Generates the key and displays it
+
+### Tenant ID
+1. In the **Tenants** Page, Click eye button and get the Tenant ID.
 
 Save these values — you'll need them in Step 5.
 
@@ -42,7 +45,7 @@ Ensure the following on the machine where you'll run the setup:
 - [ ] **curl** installed
 - [ ] **Network connectivity** — your cluster nodes must be able to reach the Abluva platform on TCP ports **443**, **55671**, and **45671**
 - [ ] **Token file** saved from Step 1
-- [ ] **Namespace, Environment ID, SAAS-API-KEY** from Step 2
+- [ ] **Namespace, Environment ID, SAAS-API-KEY, TenantID** from Step 2
 
 ---
 
@@ -67,6 +70,8 @@ env:
     value: "<your-tenant-id>"
   - name: X_ABLV_Environment_ID
     value: "<your-environment-id>"
+  - name: X_ABLV_Principal
+    value: "<PRINCIPAL_PLACEHOLDER>"
 ```
 
 Also update the namespace in the YAML metadata to match your tenant namespace.
