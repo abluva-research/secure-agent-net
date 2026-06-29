@@ -26,11 +26,11 @@ Connect your Kubernetes cluster to the Abluva platform in minutes. This guide wa
    - **Environment ID**
 
 ### SAAS-API-KEY
-1. In the **Environments** page, click the Generate API Key button
-2. It Generates the key and displays it
+1. In the **Environments** page, click the Generate API Key button on your environment
+2. It Generates the key and displays it for 15 seconds
 
 ### Tenant ID
-1. In the **Tenants** Page, Click eye button and get the Tenant ID.
+1. In the **Tenants** Page, Click your tenant and get the Tenant ID.
 
 Save these values — you'll need them in Step 5.
 
